@@ -42,7 +42,23 @@ public class SimpleAuthActivity extends AppCompatActivity implements View.OnClic
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        handleIntent();
+
+        Bundle extras = getIntent().getExtras();
+        if (extras != null) {
+            mAuthClientId = extras.getString(KEY_AUTH_CLIENT_ID);
+            mAuthDomain = extras.getString(KEY_AUTH_DOMAIN);
+            try {
+                mAuthMode = (AuthMode) extras.getSerializable(KEY_AUTH_MODE);
+            } catch (ClassCastException e) {
+                throw new IllegalArgumentException("AuthMode must be one of the following: AuthMode.Social, AuthMode.Email, AuthMode.Both");
+            }
+        }
+        if (mAuthClientId == null || mAuthDomain == null || mAuthMode == null) {
+            throw new IllegalArgumentException("Missing some of these parameters: AuthClientID, AuthDomain, AuthMode");
+        }
+
+        //Valid params
+        Log.d(TAG, String.format("Params: %s, %s, %s", mAuthClientId, mAuthDomain, mAuthMode));
 
         //Get the view
         setContentView(R.layout.simpleauth_activity);
@@ -63,14 +79,24 @@ public class SimpleAuthActivity extends AppCompatActivity implements View.OnClic
         loginBtn.setVisibility(mAuthMode == AuthMode.EMAIL || mAuthMode == AuthMode.BOTH ? View.VISIBLE : View.GONE);
     }
 
-    private void handleIntent() {
-        Uri data = getIntent().getData();
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        handleIntent(intent);
+    }
+
+    private void handleIntent(Intent intent) {
+        Uri data = intent.getData();
         if (data != null && data.getScheme().equals(DEEPLINK_SCHEME)) {
             //coming from a social redirect
             String fragment = data.getFragment();
             if (fragment == null) {
-                //FIXME: handle error
+                Log.e(TAG, "Missing response data.");
+                setResult(RESULT_CANCELED);
+                finish();
+                return;
             }
+
             int tokenStart = fragment.indexOf(HASH_ACCESS_TOKEN) + HASH_ACCESS_TOKEN.length();
             int tokenEnd = fragment.indexOf("&", tokenStart);
             if (tokenEnd == -1) {
@@ -87,38 +113,18 @@ public class SimpleAuthActivity extends AppCompatActivity implements View.OnClic
             boolean stateIsOK = lastState.equals(resultState);
             Log.d(TAG, String.format("Result: %s, %s, %b", resultToken, resultState, stateIsOK));
 
-            if (stateIsOK) {
+            if (stateIsOK && !resultToken.isEmpty()) {
                 Intent resultIntent = new Intent();
                 resultIntent.putExtra(EXTRA_TOKEN, resultToken);
-                setResult(RESULT_OK, resultIntent);
+                setResult(RESULT_OK, getIntent());
             } else {
                 setResult(RESULT_CANCELED);
             }
             finish();
-
-        } else {
-            //should be the first call, or coming back with a canceled state
-            Bundle extras = getIntent().getExtras();
-            if (extras != null) {
-                mAuthClientId = extras.getString(KEY_AUTH_CLIENT_ID);
-                mAuthDomain = extras.getString(KEY_AUTH_DOMAIN);
-                try {
-                    mAuthMode = (AuthMode) extras.getSerializable(KEY_AUTH_MODE);
-                } catch (ClassCastException e) {
-                    throw new IllegalArgumentException("AuthMode must be one of the following: AuthMode.Social, AuthMode.Email, AuthMode.Both");
-                }
-            }
-            if (mAuthClientId == null || mAuthDomain == null || mAuthMode == null) {
-                throw new IllegalArgumentException("Missing some of these parameters: AuthClientID, AuthDomain, AuthMode");
-            }
-
-            //Valid params
-            Log.d(TAG, String.format("Params: %s, %s, %s", mAuthClientId, mAuthDomain, mAuthMode));
         }
     }
 
     private void performSocialLogin(SocialConnection connection) {
-
         String redirectUrl = "simpleauth://social";
         String state = UUID.randomUUID().toString();
         saveLastState(state);
