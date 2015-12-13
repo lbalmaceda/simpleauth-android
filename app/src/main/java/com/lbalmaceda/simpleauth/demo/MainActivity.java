@@ -30,7 +30,6 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == LOGIN_RESULT) {
             if (resultCode == RESULT_OK) {
                 Toast.makeText(MainActivity.this, "Login success", Toast.LENGTH_SHORT).show();
@@ -39,7 +38,9 @@ public class MainActivity extends AppCompatActivity {
             } else {
                 Toast.makeText(MainActivity.this, "Login failed", Toast.LENGTH_SHORT).show();
             }
+        } else {
+            super.onActivityResult(requestCode, resultCode, data);
         }
-        finish();
+            finish();
     }
 }

@@ -1,3 +1,4 @@
 <resources>
-    <string name="app_name">SimpleAuth</string>
+    <string name="simpleauth_app_name">SimpleAuth</string>
+    <string name="simpleauth_filter_name">SimpleAuth</string>
 </resources>
