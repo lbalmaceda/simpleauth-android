@@ -178,9 +178,11 @@ public class SimpleAuthActivity extends AppCompatActivity implements View.OnClic
 
     private void initNetworking() {
         OkHttpClient client = new OkHttpClient();
-        HttpLoggingInterceptor interceptor = new HttpLoggingInterceptor();
-        interceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
-        client.interceptors().add(interceptor);
+        if (BuildConfig.DEBUG) {
+            HttpLoggingInterceptor interceptor = new HttpLoggingInterceptor();
+            interceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+            client.interceptors().add(interceptor);
+        }
         Gson gson = new GsonBuilder()
                 .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
                 .create();
