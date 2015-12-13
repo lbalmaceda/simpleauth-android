@@ -155,7 +155,7 @@ public class SimpleAuthActivity extends AppCompatActivity implements View.OnClic
 
     private void performSocialLogin(SocialConnection connection) {
         Log.d(TAG, "Social login in progress..");
-        String redirectUrl = "simpleauth://social";
+        String redirectUrl = DEEPLINK_SCHEME + "://social";
         String state = UUID.randomUUID().toString();
         saveLastState(state);
         String url = String.format("https://%s.auth0.com/authorize?response_type=token&client_id=%s&connection=%s&redirect_uri=%s&state=%s",
@@ -204,7 +204,7 @@ public class SimpleAuthActivity extends AppCompatActivity implements View.OnClic
                 if (response.body() == null) {
                     if (response.code() == 401) {
                         Log.e(TAG, "Invalid username or password");
-                        Toast.makeText(SimpleAuthActivity.this, "Invalid username or password", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(SimpleAuthActivity.this, R.string.simpleauth_toast_response_invalid_username_password, Toast.LENGTH_SHORT).show();
                         mEmailInput.setText("");
                         mPasswordInput.setText("");
                     } else {
@@ -219,7 +219,7 @@ public class SimpleAuthActivity extends AppCompatActivity implements View.OnClic
 
             @Override
             public void onFailure(Throwable t) {
-                Toast.makeText(SimpleAuthActivity.this, "Connection error, please retry.", Toast.LENGTH_SHORT).show();
+                Toast.makeText(SimpleAuthActivity.this, R.string.simpleauth_toast_connection_error, Toast.LENGTH_SHORT).show();
                 Log.d(TAG, "Email&Password failure.");
                 Log.d(TAG, t.getMessage());
             }
@@ -230,10 +230,10 @@ public class SimpleAuthActivity extends AppCompatActivity implements View.OnClic
         String email = mEmailInput.getText().toString().trim();
         String password = mPasswordInput.getText().toString().trim();
         if (email.isEmpty()) {
-            mEmailInput.setError("Invalid email");
+            mEmailInput.setError(getString(R.string.simpleauth_error_input_email));
         }
         if (password.isEmpty()) {
-            mPasswordInput.setError("Password can't be empty");
+            mPasswordInput.setError(getString(R.string.simpleauth_error_input_password));
         }
         return !(email.isEmpty() || password.isEmpty());
     }

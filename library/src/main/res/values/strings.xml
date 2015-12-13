@@ -7,4 +7,8 @@
     <string name="simpleauth_hint_email">Email</string>
     <string name="simpleauth_hint_password">Password</string>
     <string name="simpleauth_action_login">Login</string>
+    <string name="simpleauth_toast_response_invalid_username_password">Invalid username or password</string>
+    <string name="simpleauth_toast_connection_error">Connection error, please retry.</string>
+    <string name="simpleauth_error_input_email">Invalid email</string>
+    <string name="simpleauth_error_input_password">Password can\'t be empty</string>
 </resources>
