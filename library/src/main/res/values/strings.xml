@@ -1,9 +1,9 @@
 <resources>
-    <string name="simpleauth_app_name">SimpleAuth</string>
-    <string name="simpleauth_filter_name">SimpleAuth</string>
-    <string name="simpleauth_title">SimpleAuth Login</string>
-    <string name="simpleauth_facebook">Facebook</string>
-    <string name="simpleauth_twitter">Twitter</string>
+    <string name="simpleauth_app_name" translatable="false">SimpleAuth</string>
+    <string name="simpleauth_filter_name" translatable="false">SimpleAuth</string>
+    <string name="simpleauth_title" translatable="false">SimpleAuth Login</string>
+    <string name="simpleauth_facebook" translatable="false">Facebook</string>
+    <string name="simpleauth_twitter" translatable="false">Twitter</string>
     <string name="simpleauth_hint_email">Email</string>
     <string name="simpleauth_hint_password">Password</string>
     <string name="simpleauth_action_login">Login</string>
