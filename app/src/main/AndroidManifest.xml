@@ -21,6 +21,7 @@
         <activity
             android:name="com.lbalmaceda.simpleauth.SimpleAuthActivity"
             android:label="@string/app_name"
+            android:theme="@style/SimpleAuthTheme"
             android:launchMode="singleTask">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

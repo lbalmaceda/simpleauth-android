@@ -9,61 +9,60 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
-        android:text="SimpleAuth Login"
+        android:layout_marginBottom="30dp"
+        android:layout_marginTop="40dp"
+        android:text="@string/simpleauth_title"
+        android:textColor="@color/simpleauth_primary_text"
         android:textSize="30sp" />
 
-    <Button
-        android:id="@+id/simpleauth_fb_btn"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+    <LinearLayout
+        android:id="@+id/simpleauth_social"
+        style="@style/simpleauth_input_holder"
         android:layout_below="@id/simpleauth_title"
-        android:layout_centerHorizontal="true"
-        android:text="Facebook"
+        android:orientation="horizontal"
         android:visibility="gone"
-        tools:visibility="visible" />
+        tools:visibility="visible">
 
-    <Button
-        android:id="@+id/simpleauth_tw_btn"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/simpleauth_fb_btn"
-        android:layout_centerHorizontal="true"
-        android:text="Twitter"
-        android:visibility="gone"
-        tools:visibility="visible" />
+        <Button
+            android:id="@+id/simpleauth_fb_btn"
+            style="@style/simpleauth_social_button"
+            android:text="@string/simpleauth_facebook" />
 
-    <EditText
-        android:id="@+id/simpleauth_email_input"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/simpleauth_tw_btn"
-        android:layout_centerHorizontal="true"
-        android:gravity="center_horizontal"
-        android:imeOptions="actionNext"
-        android:inputType="textEmailAddress"
-        android:visibility="gone"
-        tools:visibility="visible" />
+        <Button
+            android:id="@+id/simpleauth_tw_btn"
+            style="@style/simpleauth_social_button"
+            android:text="@string/simpleauth_twitter" />
 
-    <EditText
-        android:id="@+id/simpleauth_password_input"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/simpleauth_email_input"
-        android:layout_centerHorizontal="true"
-        android:gravity="center_horizontal"
-        android:imeOptions="actionGo"
-        android:inputType="textPassword"
-        android:visibility="gone"
-        tools:visibility="visible" />
+    </LinearLayout>
 
-    <Button
-        android:id="@+id/simpleauth_login_btn"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/simpleauth_password_input"
-        android:layout_centerHorizontal="true"
-        android:text="Login"
+    <LinearLayout
+        android:id="@+id/simpleauth_email_password"
+        style="@style/simpleauth_input_holder"
+        android:layout_below="@id/simpleauth_social"
+        android:orientation="vertical"
         android:visibility="gone"
-        tools:visibility="visible" />
+        tools:visibility="visible">
+
+        <EditText
+            android:id="@+id/simpleauth_email_input"
+            style="@style/simpleauth_edittext"
+            android:hint="@string/simpleauth_hint_email"
+            android:imeOptions="actionNext"
+            android:inputType="textEmailAddress" />
+
+        <EditText
+            android:id="@+id/simpleauth_password_input"
+            style="@style/simpleauth_edittext"
+            android:hint="@string/simpleauth_hint_password"
+            android:imeOptions="actionGo"
+            android:inputType="textPassword" />
+
+        <Button
+            android:id="@+id/simpleauth_login_btn"
+            style="@style/simpleauth_emailpassword_button"
+            android:text="@string/simpleauth_action_login" />
+
+    </LinearLayout>
+
 
 </RelativeLayout>

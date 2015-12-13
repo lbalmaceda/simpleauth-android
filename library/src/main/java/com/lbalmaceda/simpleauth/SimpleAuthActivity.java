@@ -104,11 +104,10 @@ public class SimpleAuthActivity extends AppCompatActivity implements View.OnClic
         twBtn.setOnClickListener(this);
         loginBtn.setOnClickListener(this);
 
-        fbBtn.setVisibility(mAuthMode == AuthMode.SOCIAL || mAuthMode == AuthMode.BOTH ? View.VISIBLE : View.GONE);
-        twBtn.setVisibility(mAuthMode == AuthMode.SOCIAL || mAuthMode == AuthMode.BOTH ? View.VISIBLE : View.GONE);
-        mEmailInput.setVisibility(mAuthMode == AuthMode.EMAIL || mAuthMode == AuthMode.BOTH ? View.VISIBLE : View.GONE);
-        mPasswordInput.setVisibility(mAuthMode == AuthMode.EMAIL || mAuthMode == AuthMode.BOTH ? View.VISIBLE : View.GONE);
-        loginBtn.setVisibility(mAuthMode == AuthMode.EMAIL || mAuthMode == AuthMode.BOTH ? View.VISIBLE : View.GONE);
+        View socialHolder = findViewById(R.id.simpleauth_social);
+        View emailpasswordHolder = findViewById(R.id.simpleauth_email_password);
+        socialHolder.setVisibility(mAuthMode == AuthMode.SOCIAL || mAuthMode == AuthMode.BOTH ? View.VISIBLE : View.GONE);
+        emailpasswordHolder.setVisibility(mAuthMode == AuthMode.EMAIL || mAuthMode == AuthMode.BOTH ? View.VISIBLE : View.GONE);
 
         //Only create adapter if that mode is going to be used
         if (mAuthMode == AuthMode.EMAIL || mAuthMode == AuthMode.BOTH) {
