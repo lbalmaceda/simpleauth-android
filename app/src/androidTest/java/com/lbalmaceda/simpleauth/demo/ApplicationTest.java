@@ -1,4 +1,4 @@
-package com.lbalmaceda.simpleauth;
+package com.lbalmaceda.simpleauth.demo;
 
 import android.app.Application;
 import android.test.ApplicationTestCase;
