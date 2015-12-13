@@ -122,6 +122,11 @@ public class SimpleAuthActivity extends AppCompatActivity implements View.OnClic
         handleIntent(intent);
     }
 
+    /**
+     * Handles the redirect response from the social login flow
+     *
+     * @param intent the new received intent
+     */
     private void handleIntent(Intent intent) {
         Uri data = intent.getData();
         if (data != null && data.getScheme().equals(DEEPLINK_SCHEME)) {
@@ -153,6 +158,11 @@ public class SimpleAuthActivity extends AppCompatActivity implements View.OnClic
         }
     }
 
+    /**
+     * Starts the login flow for the given Social network.
+     *
+     * @param connection a valid SocialConnection. ex: twitter, facebook
+     */
     private void performSocialLogin(SocialConnection connection) {
         Log.d(TAG, "Social login in progress..");
         String redirectUrl = DEEPLINK_SCHEME + "://social";
@@ -165,6 +175,11 @@ public class SimpleAuthActivity extends AppCompatActivity implements View.OnClic
         startActivity(i);
     }
 
+    /**
+     * Sets the result for this activity and finishes it.
+     *
+     * @param token the received login token, or null if an error happened.
+     */
     private void sendBackResult(String token) {
         if (token == null || token.isEmpty()) {
             setResult(RESULT_CANCELED);
@@ -176,6 +191,9 @@ public class SimpleAuthActivity extends AppCompatActivity implements View.OnClic
         finish();
     }
 
+    /**
+     * Initializes the Retrofit network adapter and creates the API interface.
+     */
     private void initNetworking() {
         OkHttpClient client = new OkHttpClient();
         if (BuildConfig.DEBUG) {
@@ -194,6 +212,13 @@ public class SimpleAuthActivity extends AppCompatActivity implements View.OnClic
         mLoginApi = retrofit.create(LoginAPI.class);
     }
 
+    /**
+     * Starts the login flow with the given Email and Password.
+     * Email must exist and belong to a registered user.
+     *
+     * @param email    a non empty email string
+     * @param password a non empty password string
+     */
     private void performEmailAndPasswordLogin(String email, String password) {
         Log.d(TAG, "Email&Password login in progress..");
         EPRequest data = new EPRequest(mAuthClientId, email, password);
@@ -226,6 +251,11 @@ public class SimpleAuthActivity extends AppCompatActivity implements View.OnClic
         });
     }
 
+    /**
+     * Checks if the email and password input text is valid and shows an error if not.
+     *
+     * @return whether the email and password input text is valid (non empty).
+     */
     private boolean validEmailPasswordInput() {
         String email = mEmailInput.getText().toString().trim();
         String password = mPasswordInput.getText().toString().trim();
@@ -238,11 +268,21 @@ public class SimpleAuthActivity extends AppCompatActivity implements View.OnClic
         return !(email.isEmpty() || password.isEmpty());
     }
 
+    /**
+     * Saves in the SharedPreferences the last OAuth2 state sent.
+     *
+     * @param state the state String.
+     */
     private void saveLastState(String state) {
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(SimpleAuthActivity.this);
         sp.edit().putString(KEY_LAST_STATE, state).apply();
     }
 
+    /**
+     * Retrieves from the SharedPreferences the last OAuth2 state sent.
+     *
+     * @return the last state String.
+     */
     private String getLastState() {
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(SimpleAuthActivity.this);
         return sp.getString(KEY_LAST_STATE, "");
