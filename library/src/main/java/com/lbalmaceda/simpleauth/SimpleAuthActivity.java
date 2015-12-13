@@ -8,13 +8,31 @@ import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
+import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
+import android.widget.Toast;
 
+import com.google.gson.FieldNamingPolicy;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.lbalmaceda.simpleauth.net.EPLoginResponse;
+import com.lbalmaceda.simpleauth.net.EPRequest;
+import com.lbalmaceda.simpleauth.net.LoginAPI;
 import com.lbalmaceda.simpleauth.net.SocialConnection;
+import com.squareup.okhttp.OkHttpClient;
+import com.squareup.okhttp.logging.HttpLoggingInterceptor;
 
 import java.util.UUID;
+
+import retrofit.Call;
+import retrofit.Callback;
+import retrofit.GsonConverterFactory;
+import retrofit.Response;
+import retrofit.Retrofit;
 
 
 /**
@@ -38,6 +56,9 @@ public class SimpleAuthActivity extends AppCompatActivity implements View.OnClic
     private String mAuthDomain;
 
     private AuthMode mAuthMode;
+    private LoginAPI mLoginApi;
+    private EditText mEmailInput;
+    private EditText mPasswordInput;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -65,8 +86,19 @@ public class SimpleAuthActivity extends AppCompatActivity implements View.OnClic
 
         Button fbBtn = (Button) findViewById(R.id.simpleauth_fb_btn);
         Button twBtn = (Button) findViewById(R.id.simpleauth_tw_btn);
-        EditText emailInput = (EditText) findViewById(R.id.simpleauth_email_input);
-        EditText passwordInput = (EditText) findViewById(R.id.simpleauth_password_input);
+        mEmailInput = (EditText) findViewById(R.id.simpleauth_email_input);
+        mPasswordInput = (EditText) findViewById(R.id.simpleauth_password_input);
+        mPasswordInput.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
+                if (i == EditorInfo.IME_ACTION_GO && validEmailPasswordInput()) {
+                    String email = mEmailInput.getText().toString().trim();
+                    String password = mPasswordInput.getText().toString().trim();
+                    performEmailAndPasswordLogin(email, password);
+                }
+                return false;
+            }
+        });
         Button loginBtn = (Button) findViewById(R.id.simpleauth_login_btn);
         fbBtn.setOnClickListener(this);
         twBtn.setOnClickListener(this);
@@ -74,9 +106,15 @@ public class SimpleAuthActivity extends AppCompatActivity implements View.OnClic
 
         fbBtn.setVisibility(mAuthMode == AuthMode.SOCIAL || mAuthMode == AuthMode.BOTH ? View.VISIBLE : View.GONE);
         twBtn.setVisibility(mAuthMode == AuthMode.SOCIAL || mAuthMode == AuthMode.BOTH ? View.VISIBLE : View.GONE);
-        emailInput.setVisibility(mAuthMode == AuthMode.EMAIL || mAuthMode == AuthMode.BOTH ? View.VISIBLE : View.GONE);
-        passwordInput.setVisibility(mAuthMode == AuthMode.EMAIL || mAuthMode == AuthMode.BOTH ? View.VISIBLE : View.GONE);
+        mEmailInput.setVisibility(mAuthMode == AuthMode.EMAIL || mAuthMode == AuthMode.BOTH ? View.VISIBLE : View.GONE);
+        mPasswordInput.setVisibility(mAuthMode == AuthMode.EMAIL || mAuthMode == AuthMode.BOTH ? View.VISIBLE : View.GONE);
         loginBtn.setVisibility(mAuthMode == AuthMode.EMAIL || mAuthMode == AuthMode.BOTH ? View.VISIBLE : View.GONE);
+
+        //Only create adapter if that mode is going to be used
+        if (mAuthMode == AuthMode.EMAIL || mAuthMode == AuthMode.BOTH) {
+            initNetworking();
+        }
+
     }
 
     @Override
@@ -92,8 +130,7 @@ public class SimpleAuthActivity extends AppCompatActivity implements View.OnClic
             String fragment = data.getFragment();
             if (fragment == null) {
                 Log.e(TAG, "Missing response data.");
-                setResult(RESULT_CANCELED);
-                finish();
+                sendBackResult(null);
                 return;
             }
 
@@ -111,20 +148,14 @@ public class SimpleAuthActivity extends AppCompatActivity implements View.OnClic
             String resultState = fragment.substring(stateStart, stateEnd);
             String lastState = getLastState();
             boolean stateIsOK = lastState.equals(resultState);
-            Log.d(TAG, String.format("Result: %s, %s, %b", resultToken, resultState, stateIsOK));
+            Log.d(TAG, String.format("Social login result: %s, %s, %b", resultToken, resultState, stateIsOK));
 
-            if (stateIsOK && !resultToken.isEmpty()) {
-                Intent resultIntent = new Intent();
-                resultIntent.putExtra(EXTRA_TOKEN, resultToken);
-                setResult(RESULT_OK, getIntent());
-            } else {
-                setResult(RESULT_CANCELED);
-            }
-            finish();
+            sendBackResult(resultToken);
         }
     }
 
     private void performSocialLogin(SocialConnection connection) {
+        Log.d(TAG, "Social login in progress..");
         String redirectUrl = "simpleauth://social";
         String state = UUID.randomUUID().toString();
         saveLastState(state);
@@ -135,15 +166,75 @@ public class SimpleAuthActivity extends AppCompatActivity implements View.OnClic
         startActivity(i);
     }
 
-    @Override
-    public void onClick(View view) {
-        int id = view.getId();
-        if (id == R.id.simpleauth_fb_btn) {
-            performSocialLogin(SocialConnection.FACEBOOK);
-        } else if (id == R.id.simpleauth_tw_btn) {
-            performSocialLogin(SocialConnection.TWITTER);
-        } else if (id == R.id.simpleauth_login_btn) {
+    private void sendBackResult(String token) {
+        if (token == null || token.isEmpty()) {
+            setResult(RESULT_CANCELED);
+        } else {
+            Intent resultIntent = new Intent();
+            resultIntent.putExtra(EXTRA_TOKEN, token);
+            setResult(RESULT_OK, getIntent());
         }
+        finish();
+    }
+
+    private void initNetworking() {
+        OkHttpClient client = new OkHttpClient();
+        HttpLoggingInterceptor interceptor = new HttpLoggingInterceptor();
+        interceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+        client.interceptors().add(interceptor);
+        Gson gson = new GsonBuilder()
+                .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
+                .create();
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(String.format("https://%s.auth0.com/", mAuthDomain))
+                .client(client)
+                .addConverterFactory(GsonConverterFactory.create(gson))
+                .build();
+        mLoginApi = retrofit.create(LoginAPI.class);
+    }
+
+    private void performEmailAndPasswordLogin(String email, String password) {
+        Log.d(TAG, "Email&Password login in progress..");
+        EPRequest data = new EPRequest(mAuthClientId, email, password);
+        Call<EPLoginResponse> call = mLoginApi.emailLogin(data);
+        call.enqueue(new Callback<EPLoginResponse>() {
+            @Override
+            public void onResponse(Response<EPLoginResponse> response, Retrofit retrofit) {
+                if (response.body() == null) {
+                    if (response.code() == 401) {
+                        Log.e(TAG, "Invalid username or password");
+                        Toast.makeText(SimpleAuthActivity.this, "Invalid username or password", Toast.LENGTH_SHORT).show();
+                        mEmailInput.setText("");
+                        mPasswordInput.setText("");
+                    } else {
+                        Log.e(TAG, "Error parsing the response");
+                    }
+                    //err
+                } else {
+                    sendBackResult(response.body().getAccessToken());
+                }
+                Log.d(TAG, "Email&Password login success");
+            }
+
+            @Override
+            public void onFailure(Throwable t) {
+                Toast.makeText(SimpleAuthActivity.this, "Connection error, please retry.", Toast.LENGTH_SHORT).show();
+                Log.d(TAG, "Email&Password failure.");
+                Log.d(TAG, t.getMessage());
+            }
+        });
+    }
+
+    private boolean validEmailPasswordInput() {
+        String email = mEmailInput.getText().toString().trim();
+        String password = mPasswordInput.getText().toString().trim();
+        if (email.isEmpty()) {
+            mEmailInput.setError("Invalid email");
+        }
+        if (password.isEmpty()) {
+            mPasswordInput.setError("Password can't be empty");
+        }
+        return !(email.isEmpty() || password.isEmpty());
     }
 
     private void saveLastState(String state) {
@@ -154,5 +245,21 @@ public class SimpleAuthActivity extends AppCompatActivity implements View.OnClic
     private String getLastState() {
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(SimpleAuthActivity.this);
         return sp.getString(KEY_LAST_STATE, "");
+    }
+
+    @Override
+    public void onClick(View view) {
+        int id = view.getId();
+        if (id == R.id.simpleauth_fb_btn) {
+            performSocialLogin(SocialConnection.FACEBOOK);
+        } else if (id == R.id.simpleauth_tw_btn) {
+            performSocialLogin(SocialConnection.TWITTER);
+        } else if (id == R.id.simpleauth_login_btn) {
+            if (validEmailPasswordInput()) {
+                String email = mEmailInput.getText().toString().trim();
+                String password = mPasswordInput.getText().toString().trim();
+                performEmailAndPasswordLogin(email, password);
+            }
+        }
     }
 }

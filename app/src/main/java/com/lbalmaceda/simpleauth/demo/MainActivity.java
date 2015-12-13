@@ -24,7 +24,7 @@ public class MainActivity extends AppCompatActivity {
         Intent i = new Intent(MainActivity.this, SimpleAuthActivity.class);
         i.putExtra(SimpleAuthActivity.KEY_AUTH_DOMAIN, Constants.AUTH_DOMAIN);
         i.putExtra(SimpleAuthActivity.KEY_AUTH_CLIENT_ID, Constants.AUTH_CLIENT_ID);
-        i.putExtra(SimpleAuthActivity.KEY_AUTH_MODE, AuthMode.SOCIAL);
+        i.putExtra(SimpleAuthActivity.KEY_AUTH_MODE, AuthMode.BOTH);
         startActivityForResult(i, LOGIN_RESULT);
     }
 
