@@ -2,8 +2,17 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:gravity="center_horizontal"
     android:orientation="vertical">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="40dp"
+        android:layout_marginRight="40dp"
+        android:layout_marginTop="40dp"
+        android:text="@string/select_a_login_mode"
+        android:textColor="@color/primary_text"
+        android:textSize="20sp" />
 
     <Spinner
         android:id="@+id/login_mode_spinner"
@@ -11,12 +20,14 @@
         android:layout_height="wrap_content"
         android:layout_marginLeft="60dp"
         android:layout_marginRight="60dp"
-        android:layout_marginTop="20dp" />
+        android:layout_marginTop="20dp"
+        android:gravity="center_horizontal" />
 
     <Button
         android:id="@+id/login_btn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
         android:text="@string/begin"
         android:textColor="@color/primary" />
 

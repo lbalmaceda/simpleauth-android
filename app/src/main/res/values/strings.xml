@@ -2,4 +2,5 @@
     <string name="app_name" translatable="false">SimpleAuth</string>
     <string name="begin">BEGIN</string>
     <string name="login_successful_the_user_token_is_below">Login successful. The user token is below.</string>
+    <string name="select_a_login_mode">Login with</string>
 </resources>

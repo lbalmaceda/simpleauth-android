@@ -22,7 +22,7 @@
         android:layout_height="wrap_content"
         android:layout_marginLeft="40dp"
         android:layout_marginRight="40dp"
-        android:enabled="false"
+        android:inputType="none"
         android:textColor="@color/secondary_text"
         android:textIsSelectable="true"
         tools:text="aksnfkasdnaosndpasindpaskdnpakdnpkgnasp" />
