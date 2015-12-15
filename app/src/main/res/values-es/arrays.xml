@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="login_modes">
+        <item>Email &amp; Contraseña</item>
+        <item>Social</item>
+        <item>Ambos</item>
+    </string-array>
+</resources>

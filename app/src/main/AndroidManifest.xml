@@ -21,10 +21,17 @@
             </intent-filter>
         </activity>
         <activity
+            android:name=".ResultsActivity"
+            android:label="@string/app_name">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+            </intent-filter>
+        </activity>
+        <activity
             android:name="com.lbalmaceda.simpleauth.SimpleAuthActivity"
             android:label="@string/app_name"
-            android:theme="@style/SimpleAuthTheme"
-            android:launchMode="singleTask">
+            android:launchMode="singleTask"
+            android:theme="@style/SimpleAuthTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
             </intent-filter>
