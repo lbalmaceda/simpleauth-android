@@ -29,7 +29,7 @@ public class MainActivity extends AppCompatActivity {
 
         final Spinner spinner = (Spinner) findViewById(R.id.login_mode_spinner);
         final String[] items = getResources().getStringArray(R.array.login_modes);
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(MainActivity.this, android.R.layout.simple_spinner_item, items);
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(MainActivity.this, R.layout.spinner_item, items);
         spinner.setAdapter(adapter);
 
         Button loginBtn = (Button) findViewById(R.id.login_btn);

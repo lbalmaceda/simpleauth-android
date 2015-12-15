@@ -4,7 +4,6 @@
     <string name="simpleauth_action_login">Iniciar sesión</string>
     <string name="simpleauth_hint_email">Email</string>
     <string name="simpleauth_hint_password">Contraseña</string>
-    <string name="simpleauth_title"></string>
     <string name="simpleauth_error_input_password">La contraseña no puede estar vacía</string>
     <string name="simpleauth_error_input_email">El email es inválido</string>
     <string name="simpleauth_toast_connection_error">Error, por favor reintente.</string>
