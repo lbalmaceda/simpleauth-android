@@ -186,7 +186,7 @@ public class SimpleAuthActivity extends AppCompatActivity implements View.OnClic
         } else {
             Intent resultIntent = new Intent();
             resultIntent.putExtra(EXTRA_TOKEN, token);
-            setResult(RESULT_OK, getIntent());
+            setResult(RESULT_OK, resultIntent);
         }
         finish();
     }
