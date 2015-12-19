@@ -10,7 +10,6 @@ import android.widget.EditText;
  */
 public class ResultsActivity extends AppCompatActivity {
 
-    private static final String TAG = ResultsActivity.class.getSimpleName();
     public static final String KEY_TOKEN = "key_token";
 
     @Override

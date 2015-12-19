@@ -1,9 +1,35 @@
-<manifest
-    package="com.lbalmaceda.simpleauth"
+<manifest package="com.lbalmaceda.simpleauth"
     xmlns:android="http://schemas.android.com/apk/res/android">
 
     <application
         android:allowBackup="true"
-        android:supportsRtl="true" />
+        android:supportsRtl="true">
+        <activity
+            android:name=".SimpleAuthActivity"
+            android:launchMode="singleTop">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".SimpleAuthFlow"
+            android:launchMode="singleTask"
+            android:theme="@style/SimpleAuthTheme">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+            </intent-filter>
+
+            <intent-filter android:label="@string/simpleauth_filter_name">
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:host="social"
+                    android:scheme="simpleauth" />
+            </intent-filter>
+        </activity>
+    </application>
 
 </manifest>
