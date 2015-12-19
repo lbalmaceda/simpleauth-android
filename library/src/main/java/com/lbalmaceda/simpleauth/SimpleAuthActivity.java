@@ -6,6 +6,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -42,10 +43,14 @@ public class SimpleAuthActivity extends AppCompatActivity implements View.OnClic
 
     public static final String TAG = SimpleAuthActivity.class.getSimpleName();
 
+    public static final String ACTION_LOGIN_RESULT = "action_login_success";
+
     public static final String KEY_AUTH_CLIENT_ID = "key_auth_client_id";
     public static final String KEY_AUTH_DOMAIN = "key_auth_domain";
     public static final String KEY_AUTH_MODE = "key_auth_mode";
+
     public static final String EXTRA_TOKEN = "extra_token";
+    public static final String EXTRA_SUCCESS = "extra_success";
 
     private static final String DEEPLINK_SCHEME = "simpleauth";
     private static final String HASH_STATE = "state=";
@@ -66,6 +71,7 @@ public class SimpleAuthActivity extends AppCompatActivity implements View.OnClic
 
         Bundle extras = getIntent().getExtras();
         if (extras != null) {
+            //get the authentication flow settings
             mAuthClientId = extras.getString(KEY_AUTH_CLIENT_ID);
             mAuthDomain = extras.getString(KEY_AUTH_DOMAIN);
             try {
@@ -73,17 +79,22 @@ public class SimpleAuthActivity extends AppCompatActivity implements View.OnClic
             } catch (ClassCastException e) {
                 throw new IllegalArgumentException("AuthMode must be one of the following: AuthMode.Social, AuthMode.Email, AuthMode.Both");
             }
+
+            if (mAuthClientId == null || mAuthDomain == null || mAuthMode == null) {
+                throw new IllegalArgumentException("Missing some of these parameters: AuthClientID, AuthDomain, AuthMode");
+            }
+
+            //Valid params
+            Log.d(TAG, String.format("Params: %s, %s, %s", mAuthClientId, mAuthDomain, mAuthMode));
+            setContentView(R.layout.simpleauth_activity);
+            setView();
         }
-        if (mAuthClientId == null || mAuthDomain == null || mAuthMode == null) {
-            throw new IllegalArgumentException("Missing some of these parameters: AuthClientID, AuthDomain, AuthMode");
-        }
+    }
 
-        //Valid params
-        Log.d(TAG, String.format("Params: %s, %s, %s", mAuthClientId, mAuthDomain, mAuthMode));
-
-        //Get the view
-        setContentView(R.layout.simpleauth_activity);
-
+    /**
+     * Loads the layout and its widgets
+     */
+    private void setView() {
         Button fbBtn = (Button) findViewById(R.id.simpleauth_fb_btn);
         Button twBtn = (Button) findViewById(R.id.simpleauth_tw_btn);
         mEmailInput = (EditText) findViewById(R.id.simpleauth_email_input);
@@ -113,13 +124,6 @@ public class SimpleAuthActivity extends AppCompatActivity implements View.OnClic
         if (mAuthMode == AuthMode.EMAIL || mAuthMode == AuthMode.BOTH) {
             initNetworking();
         }
-
-    }
-
-    @Override
-    protected void onNewIntent(Intent intent) {
-        super.onNewIntent(intent);
-        handleIntent(intent);
     }
 
     /**
@@ -127,7 +131,7 @@ public class SimpleAuthActivity extends AppCompatActivity implements View.OnClic
      *
      * @param intent the new received intent
      */
-    private void handleIntent(Intent intent) {
+    private void handleSocialResult(Intent intent) {
         Uri data = intent.getData();
         if (data != null && data.getScheme().equals(DEEPLINK_SCHEME)) {
             //coming from a social redirect
@@ -153,9 +157,15 @@ public class SimpleAuthActivity extends AppCompatActivity implements View.OnClic
             String lastState = getLastState();
             boolean stateIsOK = lastState.equals(resultState);
             Log.d(TAG, String.format("Social login result: %s, %s, %b", resultToken, resultState, stateIsOK));
-
             sendBackResult(resultToken);
         }
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        Log.i(TAG, "OnNewIntent: " + intent.getData());
+        handleSocialResult(intent);
     }
 
     /**
@@ -171,23 +181,28 @@ public class SimpleAuthActivity extends AppCompatActivity implements View.OnClic
         String url = String.format("https://%s.auth0.com/authorize?response_type=token&client_id=%s&connection=%s&redirect_uri=%s&state=%s",
                 mAuthDomain, mAuthClientId, connection.toString(), redirectUrl, state);
         Intent i = new Intent(Intent.ACTION_VIEW);
+        i.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
+        i.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        i.addFlags(Intent.FLAG_FROM_BACKGROUND);
         i.setData(Uri.parse(url));
         startActivity(i);
     }
 
     /**
-     * Sets the result for this activity and finishes it.
+     * Broadcasts a new intent with the result of the login and finishes this activity.
      *
      * @param token the received login token, or null if an error happened.
      */
     private void sendBackResult(String token) {
+        Intent result = new Intent(ACTION_LOGIN_RESULT);
         if (token == null || token.isEmpty()) {
-            setResult(RESULT_CANCELED);
+            result.putExtra(EXTRA_SUCCESS, false);
         } else {
-            Intent resultIntent = new Intent();
-            resultIntent.putExtra(EXTRA_TOKEN, token);
-            setResult(RESULT_OK, resultIntent);
+            result.putExtra(EXTRA_SUCCESS, true);
+            result.putExtra(EXTRA_TOKEN, token);
         }
+        LocalBroadcastManager manager = LocalBroadcastManager.getInstance(SimpleAuthActivity.this);
+        manager.sendBroadcast(result);
         finish();
     }
 

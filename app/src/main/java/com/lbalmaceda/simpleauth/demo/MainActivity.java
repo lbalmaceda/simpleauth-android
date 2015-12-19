@@ -1,8 +1,12 @@
 package com.lbalmaceda.simpleauth.demo;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -20,7 +24,6 @@ import com.lbalmaceda.simpleauth.SimpleAuthActivity;
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = MainActivity.class.getSimpleName();
-    private static final int LOGIN_RESULT = 1000;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -50,21 +53,19 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+
+        IntentFilter loginResultFilter = new IntentFilter(SimpleAuthActivity.ACTION_LOGIN_RESULT);
+        LocalBroadcastManager.getInstance(MainActivity.this).registerReceiver(mLoginResultReceiver, loginResultFilter);
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == LOGIN_RESULT) {
-            if (resultCode == RESULT_OK) {
-                String token = data.getStringExtra(SimpleAuthActivity.EXTRA_TOKEN);
-                Log.d(TAG, String.format("Received token: %s", token));
-                showResult(token);
-            } else {
-                Toast.makeText(MainActivity.this, "Login canceled", Toast.LENGTH_SHORT).show();
-            }
-        } else {
-            super.onActivityResult(requestCode, resultCode, data);
+    protected void onDestroy() {
+        try {
+            LocalBroadcastManager.getInstance(MainActivity.this).unregisterReceiver(mLoginResultReceiver);
+        } catch (Exception ignored) {
+            //not registered
         }
+        super.onDestroy();
     }
 
     /**
@@ -77,7 +78,7 @@ public class MainActivity extends AppCompatActivity {
         i.putExtra(SimpleAuthActivity.KEY_AUTH_DOMAIN, Constants.AUTH_DOMAIN);
         i.putExtra(SimpleAuthActivity.KEY_AUTH_CLIENT_ID, Constants.AUTH_CLIENT_ID);
         i.putExtra(SimpleAuthActivity.KEY_AUTH_MODE, mode);
-        startActivityForResult(i, LOGIN_RESULT);
+        startActivity(i);
     }
 
     /**
@@ -90,4 +91,21 @@ public class MainActivity extends AppCompatActivity {
         i.putExtra(ResultsActivity.KEY_TOKEN, authToken);
         startActivity(i);
     }
+
+    /**
+     * Listens for SimpleAuth login results
+     */
+    private final BroadcastReceiver mLoginResultReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            boolean success = intent.getBooleanExtra(SimpleAuthActivity.EXTRA_SUCCESS, false);
+            if (success) {
+                String token = intent.getStringExtra(SimpleAuthActivity.EXTRA_TOKEN);
+                Log.d(TAG, String.format("Received token: %s", token));
+                showResult(token);
+            } else {
+                Toast.makeText(MainActivity.this, "Login canceled", Toast.LENGTH_SHORT).show();
+            }
+        }
+    };
 }
